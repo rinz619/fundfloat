@@ -49,7 +49,7 @@ class index(View):
 
         if user:
             login(request, user)
-            return redirect('superadmin:dashboard')
+            return redirect('superadmin:Dashboard')
         else:
             context['username'] = username
             context['password'] = password
@@ -75,3 +75,217 @@ class profile(LoginRequiredMixin,View):
     def get(self, request):
         context = {}
         return renderhelper(request, 'login', 'profile',context)
+    
+    def post(self, request):
+        password_to_check = request.POST['oldpassword']
+        newpassword = request.POST['newpassword']
+        conpassword = request.POST['conpassword']
+        password_matches = check_password(password_to_check, request.user.password)
+        if password_matches:
+            if newpassword == conpassword:
+                user = User.objects.get(id=request.user.id)
+                new_password = conpassword  # Replace 'new_password' with the new password
+                user.set_password(new_password)
+                user.pass_text = conpassword
+                user.save()
+                messages.info(request, 'Password changed')
+                return renderhelper(request, 'login', 'profile')
+            else:
+                messages.info(request, 'new password not matching')
+                context = {'oldpass': password_to_check, 'newpassword': newpassword, 'conpassword': conpassword}
+                return renderhelper(request, 'login', 'profile', context)
+
+        else:
+            messages.info(request, 'Your old password is incorrect')
+            context = {'oldpass': password_to_check,'newpassword':newpassword,'conpassword':conpassword}
+            return renderhelper(request, 'login', 'profile', context)
+        
+
+
+class courselist(LoginRequiredMixin,View):
+    def get(self, request, id=None):
+        context = {}
+        conditions = Q()
+        # context['previllage'] = check_previllage(request, 'Course')
+        if is_ajax(request):
+            page = request.GET.get('page', 1)
+            context['page'] = page
+            status = request.GET.get('status')
+            # search = request.GET.get("search")
+            type = request.GET.get('type')
+            if type == '1':
+                id = request.GET.get('id')
+                vl = request.GET.get('vl')
+                cat = Courses.objects.get(id=id)
+                if vl == '2':
+                    cat.is_active = False
+                else:
+                    cat.is_active = True
+                cat.save()
+                messages.info(request, 'Successfully Updated')
+            elif type == '2':
+                id = request.GET.get('id')
+                Courses.objects.filter(id=id).delete()
+                messages.info(request, 'Successfully Deleted')
+            # if search:
+            #     conditions &= Q(eng_title__icontains=search)
+            if status:
+                conditions &= Q(is_active=status)
+            data_list = Courses.objects.filter(conditions).order_by('-id')
+            paginator = Paginator(data_list, 15)
+
+            try:
+                datas = paginator.page(page)
+            except PageNotAnInteger:
+                datas = paginator.page(1)
+            except EmptyPage:
+                datas = paginator.page(paginator.num_pages)
+            context['datas'] = datas
+            template = loader.get_template('superadmin/course/course-table.html')
+            html_content = template.render(context, request)
+            return JsonResponse({'status': True, 'template': html_content})
+
+        data = Courses.objects.all().order_by('-id')
+        p = Paginator(data, 15)
+        page_num = request.GET.get('page', 1)
+        try:
+            page = p.page(page_num)
+        except EmptyPage:
+            page = p.page(1)
+        context['datas'] = page
+        context['page'] = page_num
+
+        return renderhelper(request, 'course', 'course-view',context)
+
+class coursecreate(LoginRequiredMixin, View):
+    def get(self, request, id=None):
+        context = {}
+        try:
+            context['data'] = Courses.objects.get(id=id)
+        except:
+            context['data'] = None
+        return renderhelper(request, 'course', 'course-create', context)
+
+    def post(self, request, id=None):
+        try:
+            data = Courses.objects.get(id=id)
+            messages.info(request, 'Successfully Updated')
+        except:
+            data = Courses()
+            messages.info(request, 'Successfully Added')
+
+        image = request.FILES.get('imagefile')
+        if image:
+            data.image=image
+
+
+       
+
+        data.title=request.POST['course_name']
+        data.subtitle=request.POST['sub_content']
+        data.phone=request.POST['mobile_number']
+        data.email=request.POST['email_id']
+        data.profession=request.POST['profession']
+        
+
+        data.save()
+
+
+
+        return redirect('superadmin:courselist')
+
+
+
+
+class instructorlist(LoginRequiredMixin,View):
+    def get(self, request, id=None):
+        context = {}
+        conditions = Q()
+        
+        if is_ajax(request):
+            page = request.GET.get('page', 1)
+            context['page'] = page
+            status = request.GET.get('status')
+            # search = request.GET.get("search")
+            type = request.GET.get('type')
+            if type == '1':
+                id = request.GET.get('id')
+                vl = request.GET.get('vl')
+                cat = Instructors.objects.get(id=id)
+                if vl == '2':
+                    cat.is_active = False
+                else:
+                    cat.is_active = True
+                cat.save()
+                messages.info(request, 'Successfully Updated')
+            elif type == '2':
+                id = request.GET.get('id')
+                Instructors.objects.filter(id=id).delete()
+                messages.info(request, 'Successfully Deleted')
+            # if search:
+            #     conditions &= Q(eng_title__icontains=search)
+            if status:
+                conditions &= Q(is_active=status)
+            data_list = Instructors.objects.filter(conditions).order_by('-id')
+            paginator = Paginator(data_list, 15)
+
+            try:
+                datas = paginator.page(page)
+            except PageNotAnInteger:
+                datas = paginator.page(1)
+            except EmptyPage:
+                datas = paginator.page(paginator.num_pages)
+            context['datas'] = datas
+            template = loader.get_template('superadmin/course/course-table.html')
+            html_content = template.render(context, request)
+            return JsonResponse({'status': True, 'template': html_content})
+
+        data = Instructors.objects.all().order_by('-id')
+        p = Paginator(data, 15)
+        page_num = request.GET.get('page', 1)
+        try:
+            page = p.page(page_num)
+        except EmptyPage:
+            page = p.page(1)
+        context['datas'] = page
+        context['page'] = page_num
+
+        return renderhelper(request, 'instructor', 'instructor-view',context)
+
+class instructorcreate(LoginRequiredMixin, View):
+    def get(self, request, id=None):
+        context = {}
+        try:
+            context['data'] = Instructors.objects.get(id=id)
+        except:
+            context['data'] = None
+        context['course'] = Courses.objects.filter(is_active=True)
+        return renderhelper(request, 'instructor', 'instructor-create', context)
+
+    def post(self, request, id=None):
+        try:
+            data = Instructors.objects.get(id=id)
+            messages.info(request, 'Successfully Updated')
+        except:
+            data = Instructors()
+            messages.info(request, 'Successfully Added')
+
+        image = request.FILES.get('imagefile')
+
+        title = request.POST['name']
+        designation = request.POST['designation']
+        # course = request.POST.getlist('course')
+        # print(course)
+
+        data.name=title
+        data.designation=designation
+        # data.course=course
+        if image:
+            data.image=image
+
+
+        data.save()
+
+
+
+        return redirect('superadmin:instructorlist')

@@ -137,3 +137,31 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
 
+
+
+class Courses(models.Model):
+    title = models.TextField(null=True, blank=True)
+    subtitle = models.TextField(null=True, blank=True)
+    image = models.ImageField(upload_to='course', null=True, blank=True)
+    phone = models.TextField(null=True, blank=True)
+    email = models.TextField(null=True, blank=True)
+    profession = models.TextField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+
+
+
+
+class Instructors(models.Model):
+    name = models.TextField(null=True, blank=True)
+    designation = models.TextField(null=True, blank=True)
+    image = models.ImageField(upload_to='instructor', null=True, blank=True)
+    course = ArrayField(models.TextField(), blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
