@@ -25,7 +25,7 @@ from django.http import HttpResponseRedirect
 # from superadmin.helper import renderhelper, is_ajax, sendQAPushNotification,link_callback
 # from docx import Document
 from datetime import datetime
-
+import random
 
 
 
@@ -49,7 +49,7 @@ class index(View):
 
         if user:
             login(request, user)
-            return redirect('superadmin:Dashboard')
+            return redirect('superadmin:dashboard')
         else:
             context['username'] = username
             context['password'] = password
@@ -62,8 +62,6 @@ class index(View):
 class dashboard(LoginRequiredMixin, View):
     def get(self, request):
         context = {}
-       
-
         return renderhelper(request, 'home', 'index', context)
 
 class Logout(LoginRequiredMixin,View):
@@ -100,6 +98,104 @@ class profile(LoginRequiredMixin,View):
             context = {'oldpass': password_to_check,'newpassword':newpassword,'conpassword':conpassword}
             return renderhelper(request, 'login', 'profile', context)
         
+
+
+class userlist(LoginRequiredMixin,View):
+    def get(self, request, id=None):
+        context = {}
+        conditions = Q()
+        # context['previllage'] = check_previllage(request, 'Course')
+        if is_ajax(request):
+            page = request.GET.get('page', 1)
+            context['page'] = page
+            status = request.GET.get('status')
+            # search = request.GET.get("search")
+            type = request.GET.get('type')
+            if type == '1':
+                id = request.GET.get('id')
+                vl = request.GET.get('vl')
+                cat = User.objects.get(id=id)
+                if vl == '2':
+                    cat.is_active = False
+                else:
+                    cat.is_active = True
+                cat.save()
+                messages.info(request, 'Successfully Updated')
+            elif type == '2':
+                id = request.GET.get('id')
+                User.objects.filter(id=id).delete()
+                messages.info(request, 'Successfully Deleted')
+            # if search:
+            #     conditions &= Q(eng_title__icontains=search)
+            if status:
+                conditions &= Q(is_active=status)
+            data_list = User.objects.filter(conditions).order_by('-id')
+            paginator = Paginator(data_list, 15)
+
+            try:
+                datas = paginator.page(page)
+            except PageNotAnInteger:
+                datas = paginator.page(1)
+            except EmptyPage:
+                datas = paginator.page(paginator.num_pages)
+            context['datas'] = datas
+            template = loader.get_template('superadmin/users/course-table.html')
+            html_content = template.render(context, request)
+            return JsonResponse({'status': True, 'template': html_content})
+
+        data = User.objects.filter(user_type=4).order_by('-id')
+        p = Paginator(data, 15)
+        page_num = request.GET.get('page', 1)
+        try:
+            page = p.page(page_num)
+        except EmptyPage:
+            page = p.page(1)
+        context['datas'] = page
+        context['page'] = page_num
+
+        return renderhelper(request, 'users', 'users-view',context)
+
+class usercreate(LoginRequiredMixin, View):
+    def get(self, request, id=None):
+        context = {}
+        try:
+            context['data'] =data= User.objects.get(id=id)
+            
+
+        except:
+            context['data'] = None
+        return renderhelper(request, 'users', 'users-create', context)
+
+    def post(self, request, id=None):
+        try:
+            data = User.objects.get(id=id)
+            messages.info(request, 'Successfully Updated')
+        except:
+            data = User()
+            data.save()
+            data.unique_id = 'FF'+str(data.id)+str(random.randint(0000,9999))
+            messages.info(request, 'Successfully Added')
+
+        image = request.FILES.get('imagefile')
+        if image:
+            data.image=image
+
+
+       
+
+        data.firstname=request.POST['firstname']
+        data.lastname=request.POST['lastname']
+        data.phone=request.POST['mobile']
+        data.email=request.POST['email']
+        data.profession=request.POST['profession']
+        data.user_type=4
+        
+
+        data.save()
+
+
+
+        return redirect('superadmin:userlist')
 
 
 class courselist(LoginRequiredMixin,View):
@@ -181,6 +277,7 @@ class coursecreate(LoginRequiredMixin, View):
 
        
 
+        data.type=request.POST['course_type']
         data.title=request.POST['course_name']
         data.subtitle=request.POST['sub_content']
         data.phone=request.POST['mobile_number']
@@ -236,7 +333,7 @@ class instructorlist(LoginRequiredMixin,View):
             except EmptyPage:
                 datas = paginator.page(paginator.num_pages)
             context['datas'] = datas
-            template = loader.get_template('superadmin/course/course-table.html')
+            template = loader.get_template('superadmin/instructor/instructor-table.html')
             html_content = template.render(context, request)
             return JsonResponse({'status': True, 'template': html_content})
 
@@ -256,7 +353,8 @@ class instructorcreate(LoginRequiredMixin, View):
     def get(self, request, id=None):
         context = {}
         try:
-            context['data'] = Instructors.objects.get(id=id)
+            context['data'] =data= Instructors.objects.get(id=id)
+            context['mycourse'] = [int(course) for course in data.course]
         except:
             context['data'] = None
         context['course'] = Courses.objects.filter(is_active=True)
@@ -271,15 +369,14 @@ class instructorcreate(LoginRequiredMixin, View):
             messages.info(request, 'Successfully Added')
 
         image = request.FILES.get('imagefile')
+        
 
-        title = request.POST['name']
-        designation = request.POST['designation']
-        # course = request.POST.getlist('course')
-        # print(course)
-
+        title = request.POST.get('name')
+        designation = request.POST.get('designation')
+        course = request.POST.getlist('course')
         data.name=title
         data.designation=designation
-        # data.course=course
+        data.course=course
         if image:
             data.image=image
 
@@ -289,3 +386,60 @@ class instructorcreate(LoginRequiredMixin, View):
 
 
         return redirect('superadmin:instructorlist')
+
+
+
+class paymentlist(LoginRequiredMixin,View):
+    def get(self, request, id=None):
+        context = {}
+        conditions = Q()
+        
+        if is_ajax(request):
+            page = request.GET.get('page', 1)
+            context['page'] = page
+            status = request.GET.get('status')
+            # search = request.GET.get("search")
+            type = request.GET.get('type')
+            if type == '1':
+                id = request.GET.get('id')
+                vl = request.GET.get('vl')
+                cat = Instructors.objects.get(id=id)
+                if vl == '2':
+                    cat.is_active = False
+                else:
+                    cat.is_active = True
+                cat.save()
+                messages.info(request, 'Successfully Updated')
+            elif type == '2':
+                id = request.GET.get('id')
+                Instructors.objects.filter(id=id).delete()
+                messages.info(request, 'Successfully Deleted')
+            # if search:
+            #     conditions &= Q(eng_title__icontains=search)
+            if status:
+                conditions &= Q(is_active=status)
+            data_list = Instructors.objects.filter(conditions).order_by('-id')
+            paginator = Paginator(data_list, 15)
+
+            try:
+                datas = paginator.page(page)
+            except PageNotAnInteger:
+                datas = paginator.page(1)
+            except EmptyPage:
+                datas = paginator.page(paginator.num_pages)
+            context['datas'] = datas
+            template = loader.get_template('superadmin/instructor/instructor-table.html')
+            html_content = template.render(context, request)
+            return JsonResponse({'status': True, 'template': html_content})
+
+        data = Instructors.objects.all().order_by('-id')
+        p = Paginator(data, 15)
+        page_num = request.GET.get('page', 1)
+        try:
+            page = p.page(page_num)
+        except EmptyPage:
+            page = p.page(1)
+        context['datas'] = page
+        context['page'] = page_num
+
+        return renderhelper(request, 'payments', 'payment-list',context)

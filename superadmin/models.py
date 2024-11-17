@@ -78,14 +78,12 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
-    name = models.TextField(null=True)
+    unique_id = models.TextField(null=True,unique=True)
+    firstname = models.TextField(null=True)
     lastname = models.TextField(null=True)
-    place = models.TextField(null=True)
-    phone = models.TextField(null=True)
+    phone = models.TextField(null=True,unique=True)
     code = models.TextField(null=True)
-    tokenone = models.TextField(null=True)
-    tokentwo = models.TextField(null=True)
-    password_text = models.TextField(null=True)
+    profession = models.TextField(null=True)
     email = models.EmailField(max_length=255, blank=True, null=True,unique=True)
     password =  models.CharField(max_length=255, blank=True,null=True)
     user_type = models.PositiveSmallIntegerField(choices=USER_TYPE_CHOICES, default=1, blank=True, null=True)
@@ -140,6 +138,7 @@ class User(AbstractBaseUser):
 
 
 class Courses(models.Model):
+    type = models.TextField(null=True, blank=True)
     title = models.TextField(null=True, blank=True)
     subtitle = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='course', null=True, blank=True)
@@ -158,8 +157,8 @@ class Courses(models.Model):
 class Instructors(models.Model):
     name = models.TextField(null=True, blank=True)
     designation = models.TextField(null=True, blank=True)
-    image = models.ImageField(upload_to='instructor', null=True, blank=True)
-    course = ArrayField(models.TextField(), blank=True, null=True)
+    course = ArrayField(models.TextField(), null=True, blank=True)
+    image = models.ImageField(upload_to='instructor', null=True, blank=True)    
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

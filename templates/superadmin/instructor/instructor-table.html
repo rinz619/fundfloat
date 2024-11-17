@@ -9,6 +9,7 @@
     {% endfor %}
 </div>
 {% endif %}
+{% load custom_tags %}
 <table
 class="table border-top table-bordered mb-0 table-hover  dataTables_wrapper dt-bootstrap5"
 id="datatable-basic">
@@ -36,7 +37,7 @@ id="datatable-basic">
        
         
         <td>{{i.name}}</td>
-        <td> </td>
+        <td><ul>{% for j in i.course %}<li>-{% instructorname j %}</li>{% endfor %}</ul></td>
         <td><a href="#" class="btn btn-primary btn-sm"  data-bs-toggle="modal" data-bs-target="#smalldes">
         <i class="side-menu__icon fe fe-eye mx-1"></i>View</a> </td>
 
@@ -44,21 +45,18 @@ id="datatable-basic">
 
         <td>
             <div class="material-switch">
-                <input id="someSwitchOptionSuccess" name="someSwitchOption001"
-                    type="checkbox" checked />
-                <label for="someSwitchOptionSuccess" class="label-success"></label>
+                <input id="someSwitchOptionSuccess{{i.id}}" name="someSwitchOption001" type="checkbox" {% if i.is_active %}checked onclick="coursestatus({{i.id}},2)"{% else %}onclick="coursestatus({{i.id}},1)" {% endif %}  />
+                <label for="someSwitchOptionSuccess{{i.id}}" class="label-success"></label>
             </div>
-
         </td>
         <td>
 
 
-            <a class="btn btn-info btn-sm mb-1" href=""><i
-                    class="side-menu__icon fe fe-edit"></i></a>
+            <a class="btn btn-info btn-sm mb-1" href="{% url 'superadmin:editinstructor' i.id %}"><i class="side-menu__icon fe fe-edit"></i></a>
 
-            <a class="btn btn-danger btn-sm mb-1" href="#"><i
-                    class="side-menu__icon fe fe-trash" data-bs-toggle="modal"
-                    data-bs-target="#modaldemo5"></i></a>
+
+                    <a class="btn btn-danger btn-sm mb-1" href="javascript:void(0)" onclick="delete_modal({{i.id}})"><i class="side-menu__icon fe fe-trash" ></i></a>
+
 
         </td>
     </tr>{% endfor %}

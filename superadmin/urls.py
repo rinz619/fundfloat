@@ -15,6 +15,10 @@ urlpatterns = [
     path('dashboard', views.dashboard.as_view(), name='dashboard'),
 
     
+    path('userlist', views.userlist.as_view(), name='userlist'),
+    path('usercreate', views.usercreate.as_view(), name='usercreate'),
+    path('useredit/<int:id>', views.usercreate.as_view(), name='useredit'),
+    
     path('courselist', views.courselist.as_view(), name='courselist'),
     path('coursecreate', views.coursecreate.as_view(), name='coursecreate'),
     path('courseedit/<int:id>', views.coursecreate.as_view(), name='courseedit'),
@@ -22,6 +26,9 @@ urlpatterns = [
     path('instructorlist', views.instructorlist.as_view(), name='instructorlist'),
     path('instructorcreate', views.instructorcreate.as_view(), name='instructorcreate'),
     path('editinstructor/<int:id>', views.instructorcreate.as_view(), name='editinstructor'),
+
+    path('paymentlist', views.paymentlist.as_view(), name='paymentlist'),
+
 
     
 ]

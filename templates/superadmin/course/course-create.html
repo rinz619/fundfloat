@@ -18,9 +18,9 @@
             <!-- PAGE-HEADER END -->
 
             <!-- ROW OPEN -->
-            <div class="row">
-                <form method="post" enctype="multipart/form-data" >
-                    {% csrf_token %}
+            <form method="post" enctype="multipart/form-data" >
+                {% csrf_token %}
+                    <div class="row">
 
                 <div class="col-md-4 col-xl-4 col-12">
                     <div class="card">
@@ -31,7 +31,7 @@
 
                                     <div class="col-lg-12 col-sm-12 mb-4 mb-lg-0">
                                         <label for="#" class="form-label">Upload Course Thumbnail Image</label>
-                                        <input type="file" class="dropify" data-bs-height="180" name="imagefile" />
+                                        <input type="file" class="dropify" data-bs-height="180" name="imagefile" {% if not data %}required{% endif %} accept=".jpg,.png,.jpeg" data-default-file="{{data.image.url}}" />
                                     </div>
 
                                 </div>
@@ -53,25 +53,34 @@
                             <div class="row col-lg-12">
                                 
                                 <div class="form-group col-lg-6 col-12">
+                                    <label for="#" class="form-label">Course Type</label>
+                                    <select class="form-control" required name="course_type">
+                                        <option value="">Select</option>
+                                        <option value="Free" {% if data.type == 'Free' %}selected{% endif %}>Free</option>
+                                        <option value="Paid" {% if data.type == 'Paid' %}selected{% endif %}>Paid</option>
+                                    </select>
+                                </div>
+                               
+                               <div class="form-group col-lg-6 col-12">
                                     <label for="#" class="form-label">Course Name</label>
-                                    <input type="text" class="form-control" id="#" placeholder="Course Name" name="course_name" required>
+                                    <input type="text" class="form-control" id="#" placeholder="Course Name" name="course_name" required value="{{data.title}}">
                                 </div>
                                
                                 <div class="form-group col-lg-6 col-12">
                                     <label for="#" class="form-label">Sub Content</label>
-                                    <input type="text" class="form-control" id="#" placeholder="Sub Content" name="sub_content" required>
+                                    <input type="text" class="form-control" id="#" placeholder="Sub Content" name="sub_content" required  value="{{data.subtitle}}">
                                 </div>
                                 <div class="form-group col-lg-6 col-12">
                                     <label for="#" class="form-label">Mobile Number</label>
-                                    <input type="number" class="form-control" id="#" placeholder="Mobile Number" name="mobile_number" required>
+                                    <input type="number" class="form-control" id="#" placeholder="Mobile Number" name="mobile_number" required  value="{{data.phone}}">
                                 </div>
                                 <div class="form-group col-lg-6 col-12">
                                     <label for="#" class="form-label">Email ID</label>
-                                    <input type="email" class="form-control" id="#" placeholder="Email ID " name="email_id" required>
+                                    <input type="email" class="form-control" id="#" placeholder="Email ID " name="email_id" required  value="{{data.email}}">
                                 </div>
-                                <div class="form-group col-lg-12 col-12">
+                                <div class="form-group col-lg-6 col-12">
                                     <label for="#" class="form-label">Profession</label>
-                                    <input type="text" class="form-control" id="#" placeholder="Profession" name="profession" required>
+                                    <input type="text" class="form-control" id="#" placeholder="Profession" name="profession" required value="{{data.profession}}">
                                 </div>
                                
                                
@@ -88,8 +97,8 @@
                     <!-- ROW CLOSED -->
 
 
-                </form>
                 </div>
+                </form>
                 <!-- CONTAINER END -->
             </div>
         </div>
