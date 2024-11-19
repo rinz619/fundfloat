@@ -173,3 +173,15 @@ class BlogCategory(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
+
+
+class Blogs(models.Model):
+    category = models.ForeignKey(BlogCategory,on_delete=models.CASCADE)
+    title = models.TextField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    image = models.ImageField(upload_to='blog', null=True, blank=True)    
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+

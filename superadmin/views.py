@@ -490,7 +490,7 @@ class bloglist(LoginRequiredMixin,View):
             if type == '1':
                 id = request.GET.get('id')
                 vl = request.GET.get('vl')
-                cat = BlogCategory.objects.get(id=id)
+                cat = Blogs.objects.get(id=id)
                 if vl == '2':
                     cat.is_active = False
                 else:
@@ -499,13 +499,13 @@ class bloglist(LoginRequiredMixin,View):
                 messages.info(request, 'Successfully Updated')
             elif type == '2':
                 id = request.GET.get('id')
-                BlogCategory.objects.filter(id=id).delete()
+                Blogs.objects.filter(id=id).delete()
                 messages.info(request, 'Successfully Deleted')
             # if search:
             #     conditions &= Q(eng_title__icontains=search)
             if status:
                 conditions &= Q(is_active=status)
-            data_list = BlogCategory.objects.filter(conditions).order_by('-id')
+            data_list = Blogs.objects.filter(conditions).order_by('-id')
             paginator = Paginator(data_list, 15)
 
             try:
@@ -519,7 +519,7 @@ class bloglist(LoginRequiredMixin,View):
             html_content = template.render(context, request)
             return JsonResponse({'status': True, 'template': html_content})
 
-        data = BlogCategory.objects.all().order_by('-id')
+        data = Blogs.objects.all().order_by('-id')
         p = Paginator(data, 15)
         page_num = request.GET.get('page', 1)
         try:
@@ -535,23 +535,28 @@ class blogcreate(LoginRequiredMixin, View):
     def get(self, request, id=None):
         context = {}
         try:
-            context['data'] =data= BlogCategory.objects.get(id=id)
+            context['data'] =data= Blogs.objects.get(id=id)
         except:
             context['data'] = None
+        context['category'] = BlogCategory.objects.filter(is_active=True)
         return renderhelper(request, 'blog', 'blog-create', context)
 
     def post(self, request, id=None):
         try:
-            data = BlogCategory.objects.get(id=id)
+            data = Blogs.objects.get(id=id)
             messages.info(request, 'Successfully Updated')
         except:
-            data = BlogCategory()
+            data = Blogs()
             messages.info(request, 'Successfully Added')
 
-        
+        image = request.FILES.get('image')
+        if image:
+            data.image = image
 
-        title = request.POST.get('title')
-        data.title = title
+        category = BlogCategory.objects.get(id=request.POST.get('category'))
+        data.category = category
+        data.title = request.POST.get('title')
+        data.description =  request.POST.get('description')
 
         data.save()
 

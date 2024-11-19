@@ -18,18 +18,20 @@
             <!-- PAGE-HEADER END -->
 
             <!-- ROW OPEN -->
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
             <div class="row">
 
                 <div class="col-md-4 col-xl-4 col-12">
                     <div class="card">
 
                         <div class="card-body">
-                            <form>
+                            
                                 <div class="row">
 
                                     <div class="col-lg-12 col-sm-12 mb-4 mb-lg-0">
                                         <label for="#" class="form-label">Upload Thumbnail Image</label>
-                                        <input type="file" class="dropify" data-bs-height="180" />
+                                        <input type="file" class="dropify" data-bs-height="180" name="image" {% if not data %} required{% endif %} data-default-file="{{data.image.url}}" />
                                     </div>
 
                                 </div>
@@ -52,28 +54,26 @@
 
                                 <div class="form-group col-lg-6 col-12">
                                     <label for="#" class="form-label">Title</label>
-                                    <input type="text" class="form-control" id="#" placeholder="Title">
+                                    <input type="text" class="form-control" id="#" placeholder="Title" name="title" required value="{{data.title}}" />
                                 </div>
                                 <div class="form-group col-lg-6 col-12">
                                     <label for="exampleInputEmail1" class="form-label">Select Category</label>
-                                    <select class="form-control select2" data-placeholder="Select Category" multiple>
-                                        <option> Category 1</option>
-                                        <option> Category 2</option>
-                                        <option> Category 3</option>
+                                    <select class="form-control select2" data-placeholder="Select Category"  name="category" required>
+                                        {% for i in category %}
+                                        <option value="{{ i.id }}" {% if i.id == data.category.id %}selected{% endif %}>{{ i.title }}</option>
+                                        {% endfor %}
                                     </select>
                                 </div>
                                 <div class="form-group col-lg-12 col-12">
                                     <label for="exampleInputEmail1" class="form-label">News Description</label>
-                                    <div id="summernote">
-                                        <p>News Description</p>
-                                    </div>
+                                    <textarea id="summernote" required name="description">{{data.description}}</textarea>
                                 </div>
                                
                                 <div class="form-group col-lg-3 col-3">
-                                    <a class="btn btn-primary mt-4 mb-0" href="">Submit</a>
+                                    <button class="btn btn-primary mt-4 mb-0" type="submit">Submit</button>
                                 </div>
 
-                                </form>
+                               
                             </div>
                         </div>
 
@@ -85,6 +85,7 @@
                 </div>
                 <!-- CONTAINER END -->
             </div>
+        </form>
         </div>
         <!--app-content close-->
 
