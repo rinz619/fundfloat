@@ -29,6 +29,15 @@ urlpatterns = [
 
     path('paymentlist', views.paymentlist.as_view(), name='paymentlist'),
 
+         
+    path('categorybloglist', views.categorybloglist.as_view(), name='categorybloglist'),
+    path('categoryblogcreate', views.categoryblogcreate.as_view(), name='categoryblogcreate'),
+    path('categoryblogedit/<int:id>', views.categoryblogcreate.as_view(), name='categoryblogedit'),
+    
+         
+    path('bloglist', views.bloglist.as_view(), name='bloglist'),
+    path('blogcreate', views.blogcreate.as_view(), name='blogcreate'),
+    path('blogedit/<int:id>', views.blogcreate.as_view(), name='blogedit'),
 
     
 ]

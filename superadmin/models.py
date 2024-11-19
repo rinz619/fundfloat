@@ -164,3 +164,12 @@ class Instructors(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
+
+
+class BlogCategory(models.Model):
+    title = models.TextField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
